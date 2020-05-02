@@ -5,11 +5,13 @@ const sliders = document.querySelectorAll('input[type="range"]');
 const currentHexes = document.querySelectorAll('.color h2');
 const popup = document.querySelector('.copy-container');
 const adjustButton = document.querySelectorAll('.adjust');
+const lockButton = document.querySelectorAll('.lock');
 const closeAdjustments = document.querySelectorAll('.close-adjustment');
 const sliderContainers = document.querySelectorAll('.sliders');
 let initialColors;
 
 //Add Event Listeners
+generateBtn.addEventListener('click', randomColors);
 sliders.forEach((slider) => {
   slider.addEventListener('input', hslControls);
 });
@@ -43,6 +45,13 @@ closeAdjustments.forEach((button, index) => {
     closeAdjustmentPanel(index);
   });
 });
+
+lockButton.forEach((button, index) => {
+  button.addEventListener('click', (e) => {
+    lockLayer(e, index);
+  });
+});
+
 //Functions
 
 //Color generator
@@ -58,7 +67,12 @@ function randomColors() {
     const hexText = div.children[0];
     const randomColor = generateHex();
     //Add it to the Array
-    initialColors.push(chroma(randomColor).hex());
+    if (div.classList.contains('locked')) {
+      initialColors.push(hexText.innerText);
+      return;
+    } else {
+      initialColors.push(chroma(randomColor).hex());
+    }
     //Add the color to the background
     div.style.backgroundColor = randomColor;
     hexText.innerText = randomColor;
@@ -75,6 +89,11 @@ function randomColors() {
   });
   //Reset Inputs
   resetInputs();
+  //Check for Button Contrast
+  adjustButton.forEach((button, index) => {
+    checkTextContrasts(initialColors[index], button);
+    checkTextContrasts(initialColors[index], lockButton[index]);
+  });
 }
 
 function checkTextContrasts(color, text) {
@@ -183,6 +202,18 @@ function openAdjustmentPanel(index) {
 
 function closeAdjustmentPanel(index) {
   sliderContainers[index].classList.remove('active');
+}
+
+function lockLayer(e, index) {
+  const lockSVG = e.target.children[0];
+  const activeBg = colorDivs[index];
+  activeBg.classList.toggle('locked');
+
+  if (lockSVG.classList.contains('fa-lock-open')) {
+    e.target.innerHTML = '<i class="fas fa-lock"></i>';
+  } else {
+    e.target.innerHTML = '<i class="fas fa-lock-open"></i>';
+  }
 }
 
 randomColors();
